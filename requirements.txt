@@ -1,0 +1,12 @@
+streamlit==1.64.0
+langchain==1.4.2
+langchain-core==1.6.4
+langchain-community==0.4.2
+langchain-google-genai==4.4.0
+langchain-pinecone==0.2.13
+pinecone==7.3.0
+pypdf==6.19.0
+docx2txt==0.9
+python-dotenv==1.2.3
+psycopg2-binary==2.9.13
+SQLAlchemy==2.1.1
