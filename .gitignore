@@ -164,7 +164,8 @@ cython_debug/
 
 secrets.toml
 
-# Temporary scratch files (document text extraction)
 scratch_*.txt
+
+data/pinecone_mapping.json
 
 

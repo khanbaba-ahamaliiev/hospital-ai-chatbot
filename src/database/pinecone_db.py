@@ -1,6 +1,5 @@
 import os
 import json
-import dotenv
 from datetime import datetime
 
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -12,16 +11,13 @@ import docx2txt
 import re
 from uuid import uuid4
 
+from src.config import settings
 
-dotenv.load_dotenv()
-api_key = os.getenv("GEMINI_API_KEY")
-pinecone_api_key = os.getenv("PINECONE_API_KEY")
-
-pc = Pinecone(api_key=pinecone_api_key)
+pc = Pinecone(api_key=settings.pinecone_api_key)
 
 embedding = GoogleGenerativeAIEmbeddings(
     model="gemini-embedding-001",
-    api_key=api_key,
+    api_key=settings.gemini_api_key,
 )
 
 index_name = "hospital-chatbot"
@@ -101,9 +97,7 @@ def _load_docx(path: str) -> list[Document]:
     return documents
 
 
-# Корінь проекту — два рівні вгору від src/database/
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 
 def ingest_documents():
     documents = []

@@ -1,4 +1,5 @@
-from src.database.pinecone_db import vector_store
+from src.database import vector_store
+from src.config import settings
 from langchain_core.tools import tool
 
 
@@ -16,7 +17,7 @@ def document_search(query: str) -> str:
     :param query: запит для пошуку (наприклад: "розклад кардіолога", "ціна УЗД")
     :return: текст з релевантними уривками з документів лікарні
     """
-    docs = vector_store.similarity_search(query, k=3)
+    docs = vector_store.similarity_search(query, k=settings.retrieval_k)
     if not docs:
         return "Інформацію за вашим запитом не знайдено в базі знань."
 

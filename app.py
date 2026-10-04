@@ -1,7 +1,7 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.llm_chain import system_message, llm, agent
+from src.llm_chain import system_message, agent
 
 st.title("Чат-бот лікарні")
 
@@ -16,7 +16,8 @@ if user_query:
     messages = st.session_state['history']
     messages.append(human_message)
 
-    result = agent.invoke({"messages": messages})
+    with st.spinner("Шукаю інформацію..."):
+        result = agent.invoke({"messages": messages})
 
     ai_message = result["messages"][-1]
     messages.append(ai_message)
@@ -27,7 +28,8 @@ if user_query:
 
         if isinstance(message, HumanMessage):
             role = "human"
-            avatar = None
+            avatar = "👤"
+
         else:
             role = "ai"
             avatar = "🏥"

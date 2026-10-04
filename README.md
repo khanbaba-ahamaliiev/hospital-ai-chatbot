@@ -1,4 +1,4 @@
-﻿# 🏥 Hospital Chatbot — Медичний ШІ-асистент
+# 🏥 Hospital Chatbot — Медичний ШІ-асистент
 
 Чат-бот для лікарні на основі **RAG (Retrieval-Augmented Generation)** та агентного підходу. Використовує Google Gemini для генерації відповідей, Pinecone як векторну базу знань і Supabase як структуровану базу даних.
 
@@ -18,19 +18,26 @@
 
 ```
 hospital-chatbot/
-├── app.py                      # Streamlit UI — головна точка входу
-├── requirements.txt            # Залежності проекту
-├── .env                        # Змінні середовища (API ключі)
+├── app.py                          # Streamlit UI — головна точка входу
+├── requirements.txt                # Залежності проекту
+├── .env                            # Змінні середовища (API ключі)
 ├── data/
-│   ├── General.pdf             # Загальна інформація про лікарню (послуги, ціни, розклад)
-│   ├── For wokers.docx         # HR-документ для персоналу (внутрішні правила)
-│   └── pinecone_mapping.json   # Мапа UUID → метадані чанків у Pinecone
+│   ├── General.pdf                 # Загальна інформація про лікарню (послуги, ціни, розклад)
+│   └── For wokers.docx             # HR-документ для персоналу (внутрішні правила)
 └── src/
-    ├── llm_chain.py            # LLM, агент та системний промпт
-    ├── rag.py                  # Інструмент document_search (LangChain tool)
+    ├── llm_chain.py                # LLM, агент та системний промпт
+    ├── config/
+    │   ├── config.py               # Pydantic Settings — завантаження конфігурації
+    │   └── config.yaml             # Налаштування моделі та пошуку
+    ├── prompts/
+    │   ├── prompt_loader.py        # Функція load_prompt() для завантаження промптів
+    │   └── system.txt              # Системний промпт агента
+    ├── tools/
+    │   ├── db_tool.py              # Інструмент query_hospital_db (SQL запити)
+    │   └── rag_tool.py             # Інструмент document_search (векторний пошук)
     └── database/
-        ├── pinecone_db.py      # Векторна БД: ініціалізація, завантаження документів
-        └── supabase.py         # SQL БД: інструмент query_hospital_db (LangChain tool)
+        ├── pinecone_db.py          # Векторна БД: ініціалізація, завантаження документів
+        └── supabase.py             # SQL БД: підключення до Supabase
 ```
 
 ### Схема роботи
@@ -67,6 +74,7 @@ hospital-chatbot/
 | Агентний фреймворк | LangChain Agents                        |
 | Векторна БД        | Pinecone (Serverless, AWS us-east-1)    |
 | Реляційна БД       | Supabase (PostgreSQL)                   |
+| Конфігурація       | Pydantic Settings + YAML                |
 | Завантаження PDF   | PyPDFLoader (LangChain Community)       |
 | Завантаження DOCX  | docx2txt                                |
 
@@ -108,12 +116,24 @@ SUPABASE_URL=postgresql://user:password@host:port/dbname
 ```
 
 | Змінна             | Де отримати                                                |
-|--------------------|------------------------------------------------------------|
+|--------------------|-------------------------------------------------------------|
 | `GEMINI_API_KEY`   | [Google AI Studio](https://aistudio.google.com/app/apikey) |
-| `PINECONE_API_KEY` | [Pinecone Console](https://app.pinecone.io)                |
-| `SUPABASE_URL`     | Supabase → Project Settings → Database → Connection string |
+| `PINECONE_API_KEY` | [Pinecone Console](https://app.pinecone.io)                 |
+| `SUPABASE_URL`     | Supabase → Project Settings → Database → Connection string  |
 
-### 5. Завантажте документи у Pinecone (перший запуск)
+### 5. (Опційно) Змініть налаштування моделі
+
+У файлі `src/config/config.yaml` можна змінити модель або кількість результатів пошуку:
+
+```yaml
+model:
+  name: "gemini-3.5-flash-lite"
+
+retrieval:
+  k: 3
+```
+
+### 6. Завантажте документи у Pinecone (перший запуск)
 
 ```bash
 python -m src.database.pinecone_db
@@ -123,9 +143,10 @@ python -m src.database.pinecone_db
 - Завантажить `data/General.pdf` (розбивка по сторінках)
 - Завантажить `data/For wokers.docx` (розбивка по нумерованих розділах)
 - Створить індекс у Pinecone (якщо не існує)
-- Збереже мапу `data/pinecone_mapping.json`
+- Автоматично створить файл `data/pinecone_mapping.json` — внутрішня карта UUID → метадані чанків.
+  Цей файл **не потрібно комітити** — він виключений з git через `.gitignore`
 
-### 6. Запустіть застосунок
+### 7. Запустіть застосунок
 
 ```bash
 streamlit run app.py
@@ -177,6 +198,7 @@ streamlit run app.py
 - **Не розголошує** медичні дані одного пацієнта іншому
 - При відсутності інформації — чесно повідомляє та направляє до реєстратури
 - Всі API-ключі зберігаються у `.env` (не комітяться до репозиторію)
+- Файл `data/pinecone_mapping.json` генерується автоматично після першого інгесту документів — містить внутрішні Pinecone UUID і виключений з git
 
 ---
 
@@ -184,15 +206,17 @@ streamlit run app.py
 
 ```
 streamlit
-langchain-core
+langchain, langchain-core, langchain-community
 langchain-google-genai
 langchain-pinecone
-langchain-community
 pinecone
 docx2txt
 pypdf
 python-dotenv
 psycopg2-binary
+SQLAlchemy
+pydantic-settings
+pyyaml
 ```
 
-> **Примітка:** `requirements.txt` містить лише основні залежності. Повний список встановлюється автоматично через pip.
+> Повний список з версіями — у `requirements.txt`.
