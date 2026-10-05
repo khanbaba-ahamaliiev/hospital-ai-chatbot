@@ -10,5 +10,5 @@ docx2txt==0.9
 python-dotenv==1.2.3
 psycopg2-binary==2.9.13
 SQLAlchemy==2.1.1
-pydantic-settings==2.9.1
-pyyaml==6.0.2
+pydantic-settings==2.10.1
+pyyaml==6.0.2
