@@ -17,7 +17,7 @@ def document_search(query: str) -> str:
     :param query: запит для пошуку (наприклад: "розклад кардіолога", "ціна УЗД")
     :return: текст з релевантними уривками з документів лікарні
     """
-    docs = vector_store.similarity_search(query, k=settings.retrieval_k)
+    docs = vector_store.similarity_search(query, k=settings.retrieval.k)
     if not docs:
         return "Інформацію за вашим запитом не знайдено в базі знань."
 

@@ -16,20 +16,20 @@ from src.config import settings
 pc = Pinecone(api_key=settings.pinecone_api_key)
 
 embedding = GoogleGenerativeAIEmbeddings(
-    model="gemini-embedding-001",
+    model=settings.pinecone.embedding_model,
     api_key=settings.gemini_api_key,
 )
 
-index_name = "hospital-chatbot"
+index_name = settings.pinecone.index_name
 
 if not pc.has_index(index_name):
     pc.create_index(
         name=index_name,
-        dimension=3072,
-        metric="cosine",
+        dimension=settings.pinecone.dimension,
+        metric=settings.pinecone.metric,
         spec=ServerlessSpec(
-            cloud="aws",
-            region="us-east-1"
+            cloud=settings.pinecone.cloud,
+            region=settings.pinecone.region,
         ),
     )
 
@@ -55,7 +55,7 @@ def _load_pdf(path: str) -> list[Document]:
     documents = []
     for page in pages:
         clean_text = re.sub(r' +', ' ', page.page_content).strip()
-        if len(clean_text) < 50:
+        if len(clean_text) < settings.pinecone.min_pdf_chunk_chars:
             continue
         page.page_content = clean_text
         page_num = page.metadata.get("page", 0) + 1
@@ -82,7 +82,7 @@ def _load_docx(path: str) -> list[Document]:
     documents = []
     for section in sections:
         section = section.strip()
-        if len(section) < 80:
+        if len(section) < settings.pinecone.min_docx_chunk_chars:
             continue
         section_title = section.split('\n')[0].strip()
         documents.append(Document(

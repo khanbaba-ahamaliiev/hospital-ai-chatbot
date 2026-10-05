@@ -1,4 +1,23 @@
 model:
   name: "gemini-3.5-flash-lite"
+  prompt_name: "system"
+
 retrieval:
   k: 3
+
+pinecone:
+  index_name: "hospital-chatbot"
+  embedding_model: "gemini-embedding-001"
+  dimension: 3072
+  metric: "cosine"
+  cloud: "aws"
+  region: "us-east-1"
+  min_pdf_chunk_chars: 50
+  min_docx_chunk_chars: 80
+
+database:
+  sample_rows: 2
+  max_query_results: 10
+
+chat:
+  max_history_turns: 15

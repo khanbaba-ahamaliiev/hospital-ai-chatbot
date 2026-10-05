@@ -1,6 +1,7 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from src.config import settings
 from src.llm_chain import system_message, agent
 
 st.title("Чат-бот лікарні")
@@ -15,6 +16,10 @@ if user_query:
 
     messages = st.session_state['history']
     messages.append(human_message)
+
+    if len(messages) > settings.chat.max_history_turns + 1:
+        st.session_state.history = [system_message] + messages[-settings.chat.max_history_turns:]
+        messages = st.session_state.history
 
     with st.spinner("Шукаю інформацію..."):
         result = agent.invoke({"messages": messages})

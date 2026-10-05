@@ -6,7 +6,7 @@ from src.tools import all_tools
 from src.prompts.prompt_loader import load_prompt
 
 llm = ChatGoogleGenerativeAI(
-    model=settings.model_name,
+    model=settings.model.name,
     api_key=settings.gemini_api_key,
 )
 
@@ -15,4 +15,4 @@ agent = create_agent(
     tools=all_tools,
 )
 
-system_message = SystemMessage(load_prompt("system"))
+system_message = SystemMessage(load_prompt(settings.model.prompt_name))
